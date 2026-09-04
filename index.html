@@ -1,0 +1,500 @@
+```html
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>SpinStrike</title>
+
+<style>
+* {
+  box-sizing: border-box;
+  margin: 0;
+  padding: 0;
+}
+
+body {
+  background: #090b12;
+  color: white;
+  font-family: Arial, sans-serif;
+  overflow: hidden;
+  user-select: none;
+}
+
+#game {
+  width: 100vw;
+  height: 100vh;
+  position: relative;
+  background:
+    radial-gradient(circle at center, #20283a 0%, #0c101b 45%, #05070b 100%);
+}
+
+/* Top UI */
+#topbar {
+  height: 70px;
+  background: rgba(5, 7, 12, .9);
+  border-bottom: 2px solid #30384b;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 0 25px;
+}
+
+.logo {
+  font-size: 27px;
+  font-weight: bold;
+  color: #61d9ff;
+  letter-spacing: 2px;
+}
+
+.stats {
+  display: flex;
+  gap: 25px;
+  font-size: 18px;
+}
+
+.money {
+  color: #ffd84d;
+  font-weight: bold;
+}
+
+.power {
+  color: #ff667d;
+  font-weight: bold;
+}
+
+/* Arena */
+#arena {
+  position: absolute;
+  top: 70px;
+  left: 0;
+  right: 260px;
+  bottom: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+#target {
+  width: 180px;
+  height: 180px;
+  border-radius: 50%;
+  border: 12px solid #ff526d;
+  background: #151b29;
+  box-shadow:
+    0 0 30px rgba(255,82,109,.4),
+    inset 0 0 25px #000;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  position: relative;
+}
+
+#target::before {
+  content: "";
+  width: 100px;
+  height: 100px;
+  border-radius: 50%;
+  border: 8px solid #ffcf48;
+  position: absolute;
+}
+
+#target::after {
+  content: "";
+  width: 30px;
+  height: 30px;
+  border-radius: 50%;
+  background: #ff526d;
+  position: absolute;
+}
+
+#gun {
+  position: absolute;
+  width: 270px;
+  height: 55px;
+  background: linear-gradient(#566174, #252c3b);
+  border-radius: 12px;
+  transform-origin: 35px 50%;
+  left: calc(50% - 35px);
+  top: calc(50% - 27px);
+  box-shadow: 0 8px 20px #000;
+  transition: transform .05s linear;
+}
+
+#gun::before {
+  content: "";
+  position: absolute;
+  width: 75px;
+  height: 20px;
+  background: #111722;
+  right: -60px;
+  top: 17px;
+  border-radius: 4px;
+}
+
+#gun::after {
+  content: "";
+  position: absolute;
+  width: 45px;
+  height: 75px;
+  background: #30394b;
+  left: 65px;
+  top: 42px;
+  border-radius: 5px 5px 15px 15px;
+}
+
+/* Sidebar */
+#shop {
+  position: absolute;
+  right: 0;
+  top: 70px;
+  width: 260px;
+  bottom: 0;
+  background: rgba(10, 13, 21, .96);
+  border-left: 2px solid #30384b;
+  padding: 20px;
+}
+
+#shop h2 {
+  color: #61d9ff;
+  margin-bottom: 15px;
+}
+
+.card {
+  background: #171d2a;
+  border: 1px solid #343d51;
+  border-radius: 10px;
+  padding: 13px;
+  margin-bottom: 12px;
+}
+
+.card h3 {
+  margin-bottom: 5px;
+}
+
+.card p {
+  color: #aab2c2;
+  font-size: 13px;
+  margin-bottom: 10px;
+}
+
+button {
+  width: 100%;
+  border: none;
+  border-radius: 7px;
+  padding: 10px;
+  background: #287cff;
+  color: white;
+  font-weight: bold;
+  cursor: pointer;
+}
+
+button:hover {
+  background: #4d92ff;
+}
+
+button:disabled {
+  background: #3a3f4b;
+  cursor: not-allowed;
+}
+
+#shootHint {
+  position: absolute;
+  bottom: 25px;
+  left: 50%;
+  transform: translateX(-50%);
+  color: #aab2c2;
+  font-size: 14px;
+}
+
+/* Floating text */
+.coinText {
+  position: absolute;
+  color: #ffd84d;
+  font-weight: bold;
+  font-size: 20px;
+  pointer-events: none;
+  animation: floatUp .8s forwards;
+}
+
+@keyframes floatUp {
+  from {
+    opacity: 1;
+    transform: translateY(0);
+  }
+  to {
+    opacity: 0;
+    transform: translateY(-60px);
+  }
+}
+
+#message {
+  position: absolute;
+  top: 90px;
+  left: 50%;
+  transform: translateX(-50%);
+  font-size: 18px;
+  color: #61d9ff;
+}
+</style>
+</head>
+
+<body>
+
+<div id="game">
+
+  <div id="topbar">
+    <div class="logo">SPINSTRIKE</div>
+
+    <div class="stats">
+      <div>Coins: <span id="coins" class="money">300000000</span></div>
+      <div>Damage: <span id="damage" class="power">10</span></div>
+      <div>Gun: <span id="gunName">Rust Blaster</span></div>
+    </div>
+  </div>
+
+  <div id="arena">
+
+    <div id="message">CLICK THE TARGET TO FIRE</div>
+
+    <div id="target"></div>
+    <div id="gun"></div>
+
+    <div id="shootHint">
+      Click anywhere in the arena or press SPACE to shoot
+    </div>
+
+  </div>
+
+  <div id="shop">
+    <h2>ARSENAL</h2>
+
+    <div class="card">
+      <h3>Steel Barrel</h3>
+      <p>Increase damage by 10.</p>
+      <button onclick="upgradeDamage()">
+        Upgrade — <span id="damageCost">1000</span> coins
+      </button>
+    </div>
+
+    <div class="card">
+      <h3>Rapid Cylinder</h3>
+      <p>Earn extra coins from every hit.</p>
+      <button onclick="upgradeReward()">
+        Upgrade — <span id="rewardCost">2500</span> coins
+      </button>
+    </div>
+
+    <div class="card">
+      <h3>Pulse Cannon</h3>
+      <p>Unlock a powerful futuristic weapon.</p>
+      <button onclick="buyPulse()">
+        Buy — 100000 coins
+      </button>
+    </div>
+
+    <div class="card">
+      <h3>Save Progress</h3>
+      <p>Your coins and upgrades are saved locally.</p>
+      <button onclick="saveGame()">SAVE GAME</button>
+    </div>
+
+    <div class="card">
+      <h3>Reset</h3>
+      <button onclick="resetGame()">RESET PROGRESS</button>
+    </div>
+  </div>
+
+</div>
+
+<script>
+let coins = 300000000;
+let damage = 10;
+let reward = 100;
+let damageCost = 1000;
+let rewardCost = 2500;
+let gunName = "Rust Blaster";
+let angle = 0;
+let spinning = false;
+
+const coinsEl = document.getElementById("coins");
+const damageEl = document.getElementById("damage");
+const gunEl = document.getElementById("gunName");
+const gun = document.getElementById("gun");
+
+function updateUI() {
+  coinsEl.textContent = Math.floor(coins).toLocaleString();
+  damageEl.textContent = damage;
+  gunEl.textContent = gunName;
+
+  document.getElementById("damageCost").textContent =
+    damageCost.toLocaleString();
+
+  document.getElementById("rewardCost").textContent =
+    rewardCost.toLocaleString();
+}
+
+function shoot() {
+  if (spinning) return;
+
+  spinning = true;
+
+  let spins = 0;
+  const totalSpins = 25 + Math.random() * 15;
+  const speed = 0.25 + Math.random() * 0.12;
+
+  const interval = setInterval(() => {
+    angle += speed;
+    gun.style.transform = `rotate(${angle}rad)`;
+
+    spins += speed;
+
+    if (spins >= totalSpins) {
+      clearInterval(interval);
+      spinning = false;
+
+      const earned = reward + Math.floor(damage * 3);
+      coins += earned;
+
+      showCoinText(earned);
+
+      document.getElementById("message").textContent =
+        "+" + earned.toLocaleString() + " COINS";
+
+      updateUI();
+      saveGame();
+    }
+  }, 16);
+}
+
+function showCoinText(amount) {
+  const text = document.createElement("div");
+  text.className = "coinText";
+  text.textContent = "+" + amount.toLocaleString();
+
+  text.style.left = (45 + Math.random() * 10) + "%";
+  text.style.top = (45 + Math.random() * 10) + "%";
+
+  document.getElementById("game").appendChild(text);
+
+  setTimeout(() => text.remove(), 800);
+}
+
+function upgradeDamage() {
+  if (coins < damageCost) {
+    alert("Not enough coins!");
+    return;
+  }
+
+  coins -= damageCost;
+  damage += 10;
+  damageCost = Math.floor(damageCost * 1.7);
+
+  updateUI();
+  saveGame();
+}
+
+function upgradeReward() {
+  if (coins < rewardCost) {
+    alert("Not enough coins!");
+    return;
+  }
+
+  coins -= rewardCost;
+  reward += 50;
+  rewardCost = Math.floor(rewardCost * 1.8);
+
+  updateUI();
+  saveGame();
+}
+
+function buyPulse() {
+  if (gunName === "Pulse Cannon") {
+    alert("You already own this gun!");
+    return;
+  }
+
+  if (coins < 100000) {
+    alert("Not enough coins!");
+    return;
+  }
+
+  coins -= 100000;
+  gunName = "Pulse Cannon";
+  damage += 100;
+
+  updateUI();
+  saveGame();
+}
+
+function saveGame() {
+  localStorage.setItem("spinstrikeSave", JSON.stringify({
+    coins,
+    damage,
+    reward,
+    damageCost,
+    rewardCost,
+    gunName
+  }));
+}
+
+function loadGame() {
+  const save = localStorage.getItem("spinstrikeSave");
+
+  if (!save) {
+    updateUI();
+    return;
+  }
+
+  try {
+    const data = JSON.parse(save);
+
+    coins = data.coins ?? 300000000;
+    damage = data.damage ?? 10;
+    reward = data.reward ?? 100;
+    damageCost = data.damageCost ?? 1000;
+    rewardCost = data.rewardCost ?? 2500;
+    gunName = data.gunName ?? "Rust Blaster";
+
+    updateUI();
+  } catch {
+    updateUI();
+  }
+}
+
+function resetGame() {
+  if (!confirm("Reset your progress?")) return;
+
+  localStorage.removeItem("spinstrikeSave");
+
+  coins = 300000000;
+  damage = 10;
+  reward = 100;
+  damageCost = 1000;
+  rewardCost = 2500;
+  gunName = "Rust Blaster";
+
+  updateUI();
+}
+
+document.getElementById("arena").addEventListener("click", function(e) {
+  if (e.target.closest("#shootHint")) {
+    shoot();
+  } else {
+    shoot();
+  }
+});
+
+document.addEventListener("keydown", function(e) {
+  if (e.code === "Space") {
+    e.preventDefault();
+    shoot();
+  }
+});
+
+loadGame();
+</script>
+
+</body>
+</html>
+```
